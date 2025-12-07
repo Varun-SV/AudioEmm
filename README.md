@@ -52,7 +52,7 @@ Understand how your room's dimensions and materials affect sound.
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/AudioEmm.git
+git clone https://github.com/Varun-SV/AudioEmm.git
 cd AudioEmm
 ```
 
