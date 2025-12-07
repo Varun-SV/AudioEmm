@@ -1,0 +1,130 @@
+{
+  "rooms": {
+    "custom_room2": {
+      "dimensions": {
+        "length": 5,
+        "width": 4,
+        "height": 3
+      },
+      "materials": {
+        "floor": "concrete",
+        "ceiling": "concrete",
+        "wall_front": "concrete",
+        "wall_back": "concrete",
+        "wall_left": "concrete",
+        "wall_right": "concrete",
+        "wall_1": "concrete",
+        "wall_4": "concrete",
+        "wall_5": "concrete"
+      },
+      "speakers": [
+        {
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0,
+          "name": "Speaker"
+        }
+      ],
+      "listeners": [
+        {
+          "x": 2.5,
+          "y": 2.0,
+          "z": 1.2,
+          "name": "Listener"
+        }
+      ],
+      "custom_walls": [
+        {
+          "name": "wall_1",
+          "material": "concrete",
+          "x1": 0.5,
+          "y1": 0.5,
+          "x2": 2.0,
+          "y2": 1.5,
+          "height": 2.5
+        },
+        {
+          "name": "wall_4",
+          "material": "concrete",
+          "x1": 0.5,
+          "y1": 3.0000000000000013,
+          "x2": 2.0,
+          "y2": 1.5,
+          "height": 2.5
+        },
+        {
+          "name": "wall_5",
+          "material": "concrete",
+          "x1": 0.5,
+          "y1": 3.0000000000000013,
+          "x2": 0.5,
+          "y2": 0.5,
+          "height": 2.5
+        }
+      ]
+    },
+    "custom_room1": {
+      "dimensions": {
+        "length": 5,
+        "width": 4,
+        "height": 3
+      },
+      "materials": {
+        "floor": "hardwood",
+        "ceiling": "hardwood",
+        "wall_front": "hardwood",
+        "wall_back": "hardwood",
+        "wall_left": "hardwood",
+        "wall_right": "hardwood",
+        "wall_4": "concrete",
+        "wall_5": "concrete",
+        "wall_1": "concrete"
+      },
+      "speakers": [
+        {
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0,
+          "name": "Speaker"
+        }
+      ],
+      "listeners": [
+        {
+          "x": 2.5,
+          "y": 2.0,
+          "z": 1.2,
+          "name": "Listener"
+        }
+      ],
+      "custom_walls": [
+        {
+          "name": "wall_4",
+          "material": "concrete",
+          "x1": 0.5,
+          "y1": 3.0000000000000013,
+          "x2": 2.0,
+          "y2": 1.5,
+          "height": 2.5
+        },
+        {
+          "name": "wall_5",
+          "material": "concrete",
+          "x1": 0.5,
+          "y1": 3.0000000000000013,
+          "x2": 0.5,
+          "y2": 0.5,
+          "height": 2.5
+        },
+        {
+          "name": "wall_1",
+          "material": "concrete",
+          "x1": 0.5,
+          "y1": 0.5,
+          "x2": 2.0,
+          "y2": 1.5,
+          "height": 2.5
+        }
+      ]
+    }
+  }
+}

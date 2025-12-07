@@ -1,0 +1,50 @@
+{
+    "audio_devices": {
+        "sony_wic100": {
+            "name": "Sony WIC100",
+            "frequencies": [],
+            "db_values": []
+        },
+        "tribit_maxsound_plus": {
+            "name": "Tribit MaxSound Plus",
+            "frequencies": [],
+            "db_values": []
+        },
+        "soundcore_q20i": {
+            "name": "SoundCore Q20i",
+            "frequencies": [],
+            "db_values": []
+        }
+    },
+    "emulation_settings": {
+        "source_device": null,
+        "target_device": null,
+        "auto_normalize": true
+    },
+    "room_settings": {
+        "dimensions": {
+            "length": 5,
+            "width": 4,
+            "height": 3
+        },
+        "materials": {
+            "floor": "hardwood",
+            "walls": "drywall",
+            "ceiling": "drywall"
+        },
+        "speaker_position": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+        },
+        "listener_position": {
+            "x": 2,
+            "y": 2,
+            "z": 1.2
+        }
+    },
+    "audio_analyzer": {
+        "sample_rate": 44100,
+        "chunk_size": 1024
+    }
+}

@@ -1,0 +1,19 @@
+[browser]
+gatherUsageStats = false
+serverPort = 8501
+
+[server]
+headless = true
+port = 8501
+maxUploadSize = 2048
+runOnSave = true
+
+[theme]
+primaryColor = "#F63366"
+backgroundColor = "black"
+secondaryBackgroundColor = "grey"
+textColor = "white"
+font = "sans serif"
+
+[client]
+showSidebarNavigation = false
