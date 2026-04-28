@@ -60,58 +60,65 @@ def _clamp_listener(lx, L: float, W: float, H: float):
 
 
 def _build_materials_dict(config: RoomConfig) -> dict[str, pra.Material]:
-    """Build per-wall pyroomacoustics Material objects, blending in any room objects."""
+    """Build per-wall pyroomacoustics Material objects, blending room + model object absorption."""
+    from lib.materials import ABSORPTION_COEFFICIENTS
     L, W, H = config.length, config.width, config.height
     mat_map = {s.surface: s.material for s in config.surfaces}
     default = "drywall"
 
-    # Compute base 7-band coefficients per pra wall name
+    # Base 7-band coefficients per pra wall name
     base_coeffs: dict[str, list[float]] = {}
     for our_name, pra_name in _SURFACE_TO_PRA.items():
         mat_name = mat_map.get(our_name, default)
         base_coeffs[pra_name] = list(get_pra_coefficients(mat_name))
 
-    # Blend room-object absorption into the wall it sits on
-    room_objects = getattr(config, "room_objects", None) or []
-    if room_objects:
-        # Accumulate coverage fractions per our_name
-        coverage: dict[str, float] = {}
-        obj_blended: dict[str, list[float]] = {}
+    # Build unified list of coverage items: (surface_name, cov_width, cov_height, 7-band coeffs)
+    coverage_items: list[tuple[str, float, float, list[float]]] = []
 
-        for obj in room_objects:
-            obj_type = obj.type
-            if obj_type not in _OBJECT_ABSORPTION:
-                continue
-            our_name = obj.wall_surface
+    for obj in (getattr(config, "room_objects", None) or []):
+        if obj.type not in _OBJECT_ABSORPTION:
+            continue
+        o = _OBJECT_ABSORPTION[obj.type]
+        coeffs = [o["low"], o["low"], o["mid"], o["mid"], o["mid"], o["high"], o["high"]]
+        coverage_items.append((obj.wall_surface, obj.width, obj.height, coeffs))
+
+    for obj in (getattr(config, "model_objects", None) or []):
+        mat = obj.material if obj.material in ABSORPTION_COEFFICIENTS else "drywall"
+        coeffs = list(get_pra_coefficients(mat))
+        # Projected footprint: walls → width×height, floor/ceiling → width×depth
+        if obj.wall_surface in ("floor", "ceiling"):
+            cov_w, cov_h = obj.bbox_w, obj.bbox_d
+        else:
+            cov_w, cov_h = obj.bbox_w, obj.bbox_h
+        coverage_items.append((obj.wall_surface, cov_w, cov_h, coeffs))
+
+    # Apply all coverage items by accumulating per-surface
+    if coverage_items:
+        coverage: dict[str, float] = {}
+        blended: dict[str, list[float]] = {}
+
+        for our_name, cov_w, cov_h, obj_coeffs in coverage_items:
             pra_name = _SURFACE_TO_PRA.get(our_name)
             if pra_name is None:
                 continue
-
             area = _wall_area(our_name, L, W, H)
-            frac = min(0.95, (obj.width * obj.height) / area) if area > 0 else 0.0
-
+            frac = min(0.95, cov_w * cov_h / area) if area > 0 else 0.0
             prev_frac = coverage.get(our_name, 0.0)
-            new_frac = min(0.95, prev_frac + frac)
+            added = min(0.95 - prev_frac, frac)
+            if added <= 0:
+                continue
+            new_frac = prev_frac + added
             coverage[our_name] = new_frac
 
-            # Weighted blend of base + all objects; accumulate per band
-            o_abs = _OBJECT_ABSORPTION[obj_type]
-            o_coeffs = [o_abs["low"], o_abs["low"], o_abs["mid"], o_abs["mid"],
-                        o_abs["mid"], o_abs["high"], o_abs["high"]]
-            if our_name not in obj_blended:
-                obj_blended[our_name] = list(base_coeffs[pra_name])
+            current = blended.get(our_name, list(base_coeffs[pra_name]))
+            blended[our_name] = [
+                current[i] * (1 - added) + obj_coeffs[i] * added
+                for i in range(7)
+            ]
 
-            # Incrementally blend: new = prev * (1-added_frac) + obj * added_frac
-            added_frac = new_frac - prev_frac
-            for i in range(7):
-                obj_blended[our_name][i] = (
-                    obj_blended[our_name][i] * (1 - added_frac) + o_coeffs[i] * added_frac
-                )
-
-        # Apply blended coefficients back
         for our_name, pra_name in _SURFACE_TO_PRA.items():
-            if our_name in obj_blended:
-                base_coeffs[pra_name] = obj_blended[our_name]
+            if our_name in blended:
+                base_coeffs[pra_name] = blended[our_name]
 
     result = {}
     for pra_name, coeffs in base_coeffs.items():

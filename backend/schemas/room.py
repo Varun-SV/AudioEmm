@@ -33,6 +33,21 @@ RoomObjectType = Literal[
 ]
 
 
+class ModelObjectConfig(BaseModel):
+    id: str = Field(default_factory=lambda: uuid4().hex)
+    model_id: str
+    filename: str
+    material: MaterialName = "drywall"
+    wall_surface: SurfaceName = "floor"
+    position: list[float] = Field(default_factory=lambda: [0.0, 0.0, 0.0])
+    rotation: list[float] = Field(default_factory=lambda: [0.0, 0.0, 0.0])
+    scale: list[float] = Field(default_factory=lambda: [1.0, 1.0, 1.0])
+    bbox_w: float = 1.0
+    bbox_h: float = 1.0
+    bbox_d: float = 1.0
+    url: str = ""
+
+
 class RoomObjectConfig(BaseModel):
     id: str = Field(default_factory=lambda: uuid4().hex)
     type: RoomObjectType
@@ -52,6 +67,7 @@ class RoomConfig(BaseModel):
     listener: Listener = Field(default_factory=lambda: Listener(x=2.5, y=2.0, z=1.2))
     rt60_preview: float | None = None
     room_objects: list[RoomObjectConfig] = Field(default_factory=list)
+    model_objects: list[ModelObjectConfig] = Field(default_factory=list)
 
 
 ROOM_PRESETS: dict[str, dict] = {

@@ -7,9 +7,13 @@ import { RoomBox } from "./RoomBox";
 import { SpeakerObject } from "./SpeakerObject";
 import { ListenerObject } from "./ListenerObject";
 import { RoomObjectsLayer } from "./RoomObjectMesh";
+import { ImportedModelLayer } from "./ImportedModelLayer";
 import { useRoomStore } from "../../store/roomStore";
 import type { RoomObjectType, SurfaceName } from "../../types/room";
-import { ROOM_OBJECT_DEFAULTS } from "../../types/room";
+import { ROOM_OBJECT_DEFAULTS, SUPPORTED_MODEL_EXTENSIONS } from "../../types/room";
+import { uploadModel } from "../../api/models";
+import { useSessionStore } from "../../store/sessionStore";
+import type { ModelObject } from "../../types/room";
 
 // Wall planes for drop hit-testing (defined in room space)
 function buildWallPlanes(L: number, W: number, H: number) {
@@ -85,7 +89,8 @@ function DropHandler({ onDrop }: DropHandlerProps) {
 }
 
 export function RoomScene() {
-  const { speakers, length: L, width: W, height: H, addRoomObject } = useRoomStore();
+  const { speakers, length: L, width: W, height: H, addRoomObject, addModelObject } = useRoomStore();
+  const sessionId = useSessionStore((s) => s.sessionId);
   const orbitRef = useRef<OrbitControlsImpl>(null);
   const [orbitEnabled, setOrbitEnabled] = useState(true);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -106,14 +111,48 @@ export function RoomScene() {
     [addRoomObject],
   );
 
+  const handleModelFileDrop = useCallback(
+    async (files: FileList) => {
+      if (!sessionId) return;
+      for (const file of Array.from(files)) {
+        const ext = "." + (file.name.split(".").pop()?.toLowerCase() ?? "");
+        if (!SUPPORTED_MODEL_EXTENSIONS.includes(ext)) continue;
+        try {
+          const resp = await uploadModel(sessionId, file);
+          const obj: ModelObject = {
+            id: crypto.randomUUID(),
+            modelId: resp.model_id,
+            filename: resp.filename,
+            url: resp.url,
+            material: "drywall",
+            wallSurface: "floor",
+            position: [L / 2, 0, W / 2],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            bboxW: 1, bboxH: 1, bboxD: 1,
+          };
+          addModelObject(obj);
+        } catch {
+          // silent — user can retry via sidebar panel
+        }
+      }
+    },
+    [sessionId, addModelObject, L, W],
+  );
+
   const handleCanvasDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
+      // 3D file drop takes priority over room-object tile drop
+      if (e.dataTransfer.files.length > 0) {
+        handleModelFileDrop(e.dataTransfer.files);
+        return;
+      }
       const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
       const handler = (DropHandler as any)._handler;
       if (handler) handler(e.nativeEvent, rect);
     },
-    [],
+    [handleModelFileDrop],
   );
 
   return (
@@ -133,6 +172,10 @@ export function RoomScene() {
 
         <RoomBox />
         <RoomObjectsLayer />
+        <ImportedModelLayer
+          onDragStart={() => setOrbitEnabled(false)}
+          onDragEnd={() => setOrbitEnabled(true)}
+        />
 
         {speakers.map((sp) => (
           <SpeakerObject

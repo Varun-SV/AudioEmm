@@ -38,6 +38,13 @@ def get_room(session_id: str):
         config = RoomConfig()
 
     config.rt60_preview = _rt60_preview(config)
+
+    # Reconstruct model URLs for the current session
+    from pathlib import Path as _Path
+    for obj in config.model_objects:
+        ext = _Path(obj.filename).suffix.lower()
+        obj.url = f"/api/sessions/{session_id}/models/{obj.model_id}{ext}"
+
     return config
 
 

@@ -32,6 +32,7 @@ export interface RoomConfig {
   listener: Listener;
   rt60_preview?: number | null;
   room_objects?: RoomObject[];
+  model_objects?: ModelObject[];
 }
 
 export const MATERIAL_COLORS: Record<MaterialName, string> = {
@@ -98,3 +99,20 @@ export const ROOM_OBJECT_DEFAULTS: Record<RoomObjectType, { width: number; heigh
   bookshelf: { width: 1.0, height: 1.8 },
   desk:      { width: 1.4, height: 0.75 },
 };
+
+export interface ModelObject {
+  id: string;
+  modelId: string;
+  filename: string;
+  url: string;
+  material: MaterialName;
+  wallSurface: SurfaceName;
+  position: [number, number, number];
+  rotation: [number, number, number];
+  scale: [number, number, number];
+  bboxW: number;
+  bboxH: number;
+  bboxD: number;
+}
+
+export const SUPPORTED_MODEL_EXTENSIONS = [".glb", ".gltf", ".obj", ".fbx", ".stl"];
