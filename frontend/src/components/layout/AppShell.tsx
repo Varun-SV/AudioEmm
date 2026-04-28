@@ -2,6 +2,7 @@ import { useState } from "react";
 import { RoomScene } from "../room/RoomScene";
 import { MaterialPanel } from "../materials/MaterialPanel";
 import { RoomStats } from "../room/RoomStats";
+import { RoomObjectsPalette } from "../room/RoomObjectsPalette";
 import { PresetSelector } from "../presets/PresetSelector";
 import { AudioUploader } from "../audio/AudioUploader";
 import { ProcessingStatus } from "../audio/ProcessingStatus";
@@ -104,6 +105,13 @@ export function AppShell() {
               <MaterialPanel />
               <hr className="border-white/10" />
               <RoomStats />
+              <hr className="border-white/10" />
+              <div>
+                <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+                  Room Objects
+                </h3>
+                <RoomObjectsPalette />
+              </div>
             </>
           )}
           {activeTab === "audio" && (
@@ -130,7 +138,7 @@ export function AppShell() {
       <div className="flex-1 relative">
         <RoomScene />
         <div className="absolute bottom-3 right-3 text-muted text-xs bg-black/50 rounded px-2 py-1">
-          Drag speakers/listener · Orbit: left-click · Zoom: scroll
+          Drag speakers/listener · Drop objects from sidebar · Orbit: left-click · Zoom: scroll
         </div>
       </div>
 

@@ -17,7 +17,8 @@ export function ListenerObject({ onDragStart, onDragEnd }: Props) {
   const { raycaster } = useThree();
   const { listener, setListener, length, width } = useRoomStore();
 
-  const dragPlane = useRef(new THREE.Plane(new THREE.Vector3(0, 1, 0), -listener.y));
+  // Three.js Y = room Z (height); Three.js Z = room Y (depth)
+  const dragPlane = useRef(new THREE.Plane(new THREE.Vector3(0, 1, 0), -listener.z));
   const intersection = useRef(new THREE.Vector3());
 
   const handlePointerDown = useCallback(
@@ -26,9 +27,9 @@ export function ListenerObject({ onDragStart, onDragEnd }: Props) {
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
       setDragging(true);
       onDragStart();
-      dragPlane.current.set(new THREE.Vector3(0, 1, 0), -listener.y);
+      dragPlane.current.set(new THREE.Vector3(0, 1, 0), -listener.z);
     },
-    [listener.y, onDragStart],
+    [listener.z, onDragStart],
   );
 
   const handlePointerMove = useCallback(
@@ -36,8 +37,8 @@ export function ListenerObject({ onDragStart, onDragEnd }: Props) {
       if (!dragging) return;
       raycaster.ray.intersectPlane(dragPlane.current, intersection.current);
       const newX = Math.max(0, Math.min(intersection.current.x, length));
-      const newZ = Math.max(0, Math.min(intersection.current.z, width));
-      setListener({ x: newX, y: listener.y, z: newZ });
+      const newY = Math.max(0, Math.min(intersection.current.z, width));
+      setListener({ x: newX, y: newY, z: listener.z });
     },
     [dragging, raycaster, listener, setListener, length, width],
   );

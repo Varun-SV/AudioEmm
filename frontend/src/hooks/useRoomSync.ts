@@ -29,6 +29,15 @@ export function useRoomSync() {
         surfaces: room.surfaces,
         speakers: room.speakers,
         listener: room.listener,
+        room_objects: room.roomObjects.map((o) => ({
+          id: o.id,
+          type: o.type,
+          wall_surface: o.wallSurface,
+          pos_u: o.posU,
+          pos_v: o.posV,
+          width: o.width,
+          height: o.height,
+        })) as any,
       };
       try {
         const updated = await putRoom(sessionId, config);
@@ -44,6 +53,6 @@ export function useRoomSync() {
   }, [
     sessionId,
     room.length, room.width, room.height,
-    room.surfaces, room.speakers, room.listener,
+    room.surfaces, room.speakers, room.listener, room.roomObjects,
   ]);
 }
