@@ -31,6 +31,8 @@ export interface RoomConfig {
   speakers: Speaker[];
   listener: Listener;
   rt60_preview?: number | null;
+  room_objects?: RoomObject[];
+  model_objects?: ModelObject[];
 }
 
 export const MATERIAL_COLORS: Record<MaterialName, string> = {
@@ -63,3 +65,54 @@ export const SURFACE_LABELS: Record<SurfaceName, string> = {
   wall_left:  "Wall (Left)",
   wall_right: "Wall (Right)",
 };
+
+export type RoomObjectType =
+  | "curtain" | "window" | "door" | "sofa" | "bookshelf" | "desk";
+
+export interface RoomObject {
+  id: string;
+  type: RoomObjectType;
+  wallSurface: SurfaceName;
+  posU: number;
+  posV: number;
+  width: number;
+  height: number;
+}
+
+export const ROOM_OBJECT_LABELS: Record<RoomObjectType, string> = {
+  curtain:   "Curtain",
+  window:    "Window",
+  door:      "Door",
+  sofa:      "Sofa",
+  bookshelf: "Bookshelf",
+  desk:      "Desk",
+};
+
+export const ROOM_OBJECT_WALL_TYPES: RoomObjectType[] = ["curtain", "window", "door"];
+export const ROOM_OBJECT_FLOOR_TYPES: RoomObjectType[] = ["sofa", "bookshelf", "desk"];
+
+export const ROOM_OBJECT_DEFAULTS: Record<RoomObjectType, { width: number; height: number }> = {
+  curtain:   { width: 1.5, height: 2.0 },
+  window:    { width: 1.2, height: 1.0 },
+  door:      { width: 0.9, height: 2.1 },
+  sofa:      { width: 2.0, height: 0.9 },
+  bookshelf: { width: 1.0, height: 1.8 },
+  desk:      { width: 1.4, height: 0.75 },
+};
+
+export interface ModelObject {
+  id: string;
+  modelId: string;
+  filename: string;
+  url: string;
+  material: MaterialName;
+  wallSurface: SurfaceName;
+  position: [number, number, number];
+  rotation: [number, number, number];
+  scale: [number, number, number];
+  bboxW: number;
+  bboxH: number;
+  bboxD: number;
+}
+
+export const SUPPORTED_MODEL_EXTENSIONS = [".glb", ".gltf", ".obj", ".fbx", ".stl"];

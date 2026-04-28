@@ -19,7 +19,8 @@ export function SpeakerObject({ speaker, onDragStart, onDragEnd }: Props) {
   const { camera, gl, raycaster } = useThree();
   const { setSpeakers, speakers, length, width, height } = useRoomStore();
 
-  const dragPlane = useRef(new THREE.Plane(new THREE.Vector3(0, 1, 0), -speaker.y));
+  // Three.js Y = room Z (height); Three.js Z = room Y (depth)
+  const dragPlane = useRef(new THREE.Plane(new THREE.Vector3(0, 1, 0), -speaker.z));
   const intersection = useRef(new THREE.Vector3());
 
   const handlePointerDown = useCallback(
@@ -28,9 +29,9 @@ export function SpeakerObject({ speaker, onDragStart, onDragEnd }: Props) {
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
       setDragging(true);
       onDragStart();
-      dragPlane.current.set(new THREE.Vector3(0, 1, 0), -speaker.y);
+      dragPlane.current.set(new THREE.Vector3(0, 1, 0), -speaker.z);
     },
-    [speaker.y, onDragStart],
+    [speaker.z, onDragStart],
   );
 
   const handlePointerMove = useCallback(
@@ -38,10 +39,10 @@ export function SpeakerObject({ speaker, onDragStart, onDragEnd }: Props) {
       if (!dragging) return;
       raycaster.ray.intersectPlane(dragPlane.current, intersection.current);
       const newX = Math.max(0, Math.min(intersection.current.x, length));
-      const newZ = Math.max(0, Math.min(intersection.current.z, width));
+      const newY = Math.max(0, Math.min(intersection.current.z, width));
       setSpeakers(
         speakers.map((s) =>
-          s.id === speaker.id ? { ...s, x: newX, y: speaker.y, z: newZ } : s,
+          s.id === speaker.id ? { ...s, x: newX, y: newY } : s,
         ),
       );
     },

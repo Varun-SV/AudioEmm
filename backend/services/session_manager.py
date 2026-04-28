@@ -16,6 +16,7 @@ class Session:
         self.rir = self.path / "rir"
         self.results = self.path / "results"
         self.eq_profiles = self.path / "eq_profiles"
+        self.models = self.path / "models"
 
     @property
     def metadata_path(self) -> Path:
@@ -55,7 +56,8 @@ class SessionManager:
     def create_session(self) -> Session:
         session_id = uuid4().hex
         session = Session(session_id, self.base_dir)
-        for d in (session.path, session.uploads, session.rir, session.results, session.eq_profiles):
+        for d in (session.path, session.uploads, session.rir, session.results,
+                  session.eq_profiles, session.models):
             d.mkdir(parents=True, exist_ok=True)
         now = datetime.now(timezone.utc)
         meta = {

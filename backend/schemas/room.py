@@ -28,6 +28,36 @@ class Listener(BaseModel):
     z: float = Field(ge=0.0)
 
 
+RoomObjectType = Literal[
+    "curtain", "window", "door", "sofa", "bookshelf", "desk"
+]
+
+
+class ModelObjectConfig(BaseModel):
+    id: str = Field(default_factory=lambda: uuid4().hex)
+    model_id: str
+    filename: str
+    material: MaterialName = "drywall"
+    wall_surface: SurfaceName = "floor"
+    position: list[float] = Field(default_factory=lambda: [0.0, 0.0, 0.0])
+    rotation: list[float] = Field(default_factory=lambda: [0.0, 0.0, 0.0])
+    scale: list[float] = Field(default_factory=lambda: [1.0, 1.0, 1.0])
+    bbox_w: float = 1.0
+    bbox_h: float = 1.0
+    bbox_d: float = 1.0
+    url: str = ""
+
+
+class RoomObjectConfig(BaseModel):
+    id: str = Field(default_factory=lambda: uuid4().hex)
+    type: RoomObjectType
+    wall_surface: SurfaceName
+    pos_u: float = Field(default=0.5, ge=0.0, le=1.0)
+    pos_v: float = Field(default=0.5, ge=0.0, le=1.0)
+    width: float = Field(default=1.0, ge=0.1, le=10.0)
+    height: float = Field(default=1.5, ge=0.1, le=10.0)
+
+
 class RoomConfig(BaseModel):
     length: float = Field(default=5.0, ge=1.0, le=30.0)
     width: float = Field(default=4.0, ge=1.0, le=30.0)
@@ -36,6 +66,8 @@ class RoomConfig(BaseModel):
     speakers: list[Speaker] = Field(default_factory=list)
     listener: Listener = Field(default_factory=lambda: Listener(x=2.5, y=2.0, z=1.2))
     rt60_preview: float | None = None
+    room_objects: list[RoomObjectConfig] = Field(default_factory=list)
+    model_objects: list[ModelObjectConfig] = Field(default_factory=list)
 
 
 ROOM_PRESETS: dict[str, dict] = {
