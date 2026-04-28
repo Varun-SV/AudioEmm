@@ -15,25 +15,31 @@ export function useSession() {
 
     async function init() {
       const stored = localStorage.getItem(SESSION_KEY);
-      let id = stored;
+      let id: string | null = stored;
 
       if (stored) {
         try {
           await getSession(stored);
         } catch {
           id = null;
+          localStorage.removeItem(SESSION_KEY);
         }
       }
 
       if (!id) {
-        const s = await createSession();
-        id = s.session_id;
-        localStorage.setItem(SESSION_KEY, id);
+        try {
+          const s = await createSession();
+          id = s.session_id;
+          localStorage.setItem(SESSION_KEY, id);
+        } catch (err) {
+          console.error("[useSession] Failed to create session, retrying in 3s:", err);
+          setTimeout(init, 3000);
+          return;
+        }
       }
 
       setSessionId(id);
 
-      // Load persisted room config
       try {
         const config = await getRoom(id);
         loadConfig(config);
