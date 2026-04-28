@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    environment:
+      - SESSIONS_DIR=/data/sessions
+      - HRTF_PATH=/app/data/hrtf/MIT_KEMAR.sofa
+      - SESSION_TTL=3600
+      - MAX_UPLOAD_MB=200
+      - CLEANUP_INTERVAL=900
+      - SAMPLE_RATE=48000
+      - RIR_MAX_ORDER=3
+      - RIR_DURATION=1.0
+    volumes:
+      - sessions_data:/data/sessions
+    expose:
+      - "8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build: ./frontend
+    expose:
+      - "80"
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+
+volumes:
+  sessions_data:
