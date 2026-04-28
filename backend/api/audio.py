@@ -157,3 +157,20 @@ def download_audio(session_id: str, job_id: str):
         media_type="audio/wav",
         filename=f"binaural_{job_id[:8]}.wav",
     )
+
+
+@router.get("/preview/{upload_id}")
+def preview_upload(session_id: str, upload_id: str):
+    """Stream the original uploaded audio for waveform display."""
+    try:
+        session = session_manager.get_session(session_id)
+    except KeyError:
+        raise HTTPException(404, "Session not found")
+    meta_path = session.uploads / f"{upload_id}.json"
+    if not meta_path.exists():
+        raise HTTPException(404, "Upload not found")
+    meta = json.loads(meta_path.read_text())
+    src_path = session.uploads / f"{upload_id}{meta['ext']}"
+    if not src_path.exists():
+        raise HTTPException(404, "Audio file not found")
+    return FileResponse(str(src_path), media_type="audio/wav")

@@ -1,6 +1,23 @@
 version: "3.9"
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: audioemm
+      POSTGRES_USER: audioemm
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U audioemm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build: ./backend
     environment:
@@ -10,18 +27,31 @@ services:
       - MAX_UPLOAD_MB=200
       - CLEANUP_INTERVAL=900
       - SAMPLE_RATE=48000
-      - RIR_MAX_ORDER=3
+      - RIR_MAX_ORDER=6
       - RIR_DURATION=1.0
+      - USE_GPU=auto
+      - DATABASE_URL=postgresql+asyncpg://audioemm:${POSTGRES_PASSWORD:-changeme}@postgres:5432/audioemm
+      - JWT_SECRET=${JWT_SECRET:-change-this-secret-in-production}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID:-}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET:-}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
     volumes:
       - sessions_data:/data/sessions
+      - library_data:/data/library
     expose:
       - "8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 20s
 
   frontend:
     build: ./frontend
@@ -41,4 +71,6 @@ services:
     restart: unless-stopped
 
 volumes:
+  postgres_data:
   sessions_data:
+  library_data:
