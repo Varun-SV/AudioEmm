@@ -42,3 +42,7 @@ export async function getAudioResult(
 export function downloadUrl(sessionId: string, jobId: string): string {
   return `/api/sessions/${sessionId}/audio/download/${jobId}`;
 }
+
+export function previewUrl(sessionId: string, uploadId: string): string {
+  return `/api/sessions/${sessionId}/audio/preview/${uploadId}`;
+}
