@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
+from sqlalchemy import text
 
 from api.router import api_router
 from config import settings
@@ -35,9 +36,15 @@ def _download_hrtf():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Ensure tables exist (idempotent — won't drop existing data)
+    # Ensure tables exist. Use a PG advisory lock so that when uvicorn starts
+    # multiple workers they don't race on CREATE TABLE and hit a duplicate-key
+    # error on pg_type_typname_nsp_index.
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.execute(text("SELECT pg_advisory_lock(8675309)"))
+        try:
+            await conn.run_sync(Base.metadata.create_all)
+        finally:
+            await conn.execute(text("SELECT pg_advisory_unlock(8675309)"))
 
     # Download HRTF dataset on first startup (run in thread so it doesn't block)
     loop = asyncio.get_event_loop()
