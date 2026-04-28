@@ -1,7 +1,7 @@
 import json
 import shutil
 import asyncio
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from uuid import uuid4
 
@@ -62,7 +62,7 @@ class SessionManager:
             "session_id": session_id,
             "created_at": now.isoformat(),
             "last_accessed": now.isoformat(),
-            "expires_at": now.replace(second=now.second + settings.session_ttl).isoformat(),
+            "expires_at": (now + timedelta(seconds=settings.session_ttl)).isoformat(),
         }
         session.metadata_path.write_text(json.dumps(meta))
         return session
